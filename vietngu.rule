@@ -3,14 +3,14 @@
 tonemarkset = u'sfrxj'
 untonemark  = u'z'
 compoundset = u'aeoudw'
-delimitrset = u"' \t\n,."	# no need to be complete
+delimitrset = u"-' \t\n,."	# no need to be complete
 vowelalphas = u'aăâeêioôơuưy'
 jieyinset   = u'ou'
 consonants  = (u'b', u'c', u'd', u'đ', u'g', u'h', u'k', u'l', u'm', u'n', 
 		u'p', u'q', u'r', u's', u't', u'v', u'x', u'ch', u'gi', u'gh', 
 		u'kh', u'nh', u'ng', u'ngh', u'ph', u'th', u'tr')
 terminalsnd = (u'i', u'y', u'u', u'o',
-		u'n', u'ng', u'm', u'p', u't', u'c', u'ch')
+		u'n', u'ng', u'nh', u'm', u'p', u't', u'c', u'ch')
 suffixes    = ()
 tonemarkdefault  = TONEATRIGHTVOWEL
 tonemarkexceptions = {(0, u'', 0, u'', 0): TONEATLEFTVOWEL,

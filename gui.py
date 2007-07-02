@@ -105,8 +105,10 @@ class MainFrame(Frame):
 				#event.widget.insert('insert', currentline)
 	def textbox_onreturn(self, event):
 		currentline = event.widget.get('insert linestart', 'insert lineend')
-		currentpos = event.widget.index('insert - 1 chars')
+		currentpos = event.widget.index('insert linestart')
+		print currentline.encode('gbk', 'replace'), currentpos,
 		currentline = pyformat(currentline)
+		print
 		event.widget.delete('insert linestart', 'insert lineend')
 		event.widget.insert(currentpos, currentline)
 	def textbox_donowword(self, event):

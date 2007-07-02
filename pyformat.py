@@ -28,7 +28,8 @@ def specifyrule(rulefilename):
 	untonetransform = dict(untonetransform)
 	if len(loweralphas) <> len(upperalphas):
 		raise ValueError, 'Unmatched length between lower/upperalphas'
-	lower2upper = upper2lower = []
+	lower2upper = []
+	upper2lower = []
 	for i in range(0, len(loweralphas)):
 		lower2upper += [(loweralphas[i], upperalphas[i])]
 		upper2lower += [(upperalphas[i], loweralphas[i])]
@@ -51,16 +52,16 @@ def islower(char):
 	return char in loweralphas
 
 def toupper(char):
-	if not islower(char):
-		return char
-	else:
+	if char in lower2upper.keys():
 		return lower2upper[char]
+	else:
+		return char
 
 def tolower(char):
-	if not isupper(char):
-		return char
-	else:
+	if char in upper2lower.keys():
 		return upper2lower[char]
+	else:
+		return char
 
 def uppercase(str):
 	return u''.join(map(toupper, str))
@@ -152,13 +153,17 @@ def splitsyllable(syllable):
 			raise ValueError, "Unrecognized vowel %s" % vowels
 	if jieyin and not vowels:
 		jieyin, vowels = u'', jieyin
-	if terminal and not vowels:
-		needchange = True
+	if terminal:
+		terminalisvowel = True
 		for char in lowercase(terminal):
 			if not isvowel(char):
-				needchange = False
-		if needchange:
-			terminal, vowels = u'', terminal
+				terminalisvowel = False
+	else:
+		terminalisvowel = False
+	if terminalisvowel and not jieyin and isjieyin(tolower(vowels)):
+		jieyin, vowels, terminal = vowels, terminal, u''
+	if terminalisvowel and not vowels:
+		terminal, vowels = u'', terminal
 	print (consonant, jieyin, vowels, terminal, suffix),
 	return consonant, jieyin, vowels, terminal, suffix
 
