@@ -2,50 +2,40 @@
 # -*- coding: utf-8 -*-
 # pyformat.py	author: YIN Dian	copyleft 2007	licenced under GPL
 # Format plain pinyin text with tone markers into toned pinyin
-# version: 20070623
+# version: 20070701
 # syllable model: [consonant] + [jieyin] + [vowel(s)] + [terminal] + [suffix]
+# Hist:	070624: first version out, pinyin implemented
+#	070702: implemented uppercase handling, and make splitting greedy
 import sys, os, string, types, fileinput
 defaultencoding = 'gbk'
-tonemarkset = u'1234'
-untonemark  = u'0'
-compoundset = u'ue'
-delimitrset = u"' \t\n,." # no need to be complete
-vowelalphas = u'aoeiuüê'
-jieyinset   = u'iuü'
-consonants  = (u'b', u'p', u'm', u'f', u'd', u't', u'n', u'l', 
-		u'g', u'k', u'h', u'j', u'q', u'x', u'y', 
-		u'zh', u'ch', u'sh', u'r', u'z', u'c', u's', u'w',
-		# extended
-		#u'ng', u'v', u'qh'
-		)
-terminalsnd = (u'n', u'ng',
-		# extended
-		#u'm', u'p', u't', u'k', u'q'
-		)
-suffixes    = (u'r')
 TONEATLEFTVOWEL  = 1
 TONEATRIGHTVOWEL = 2
 TONEATJIEYIN     = 3
-tonemarkdefault  = TONEATLEFTVOWEL
-tonemarkexceptions = {(0, u'i', u'u', 0, 0): TONEATJIEYIN}
-tonetransform = {
-	u'a': u'āáǎà',
-	u'o': u'ōóǒò',
-	u'e': u'ēéěè',
-	u'i': u'īíǐì',
-	u'u': u'ūúǔù',
-	u'ü': u'ǖǘǚǜ'
-}
-compoundtrasform = {
-	u'uu': u'ü',
-	u'ee': u'ê'
-}
-# computed rules
-tonedalphas = u''.join([toned for alpha, toned in tonetransform.items()])
-untonetransform = []
-for alpha, toned in tonetransform.items():
-	untonetransform += [(tonedalpha, alpha) for tonedalpha in toned]
-untonetransform = dict(untonetransform)
+def specifyrule(rulefilename):
+	global tonemarkset,untonemark,compoundset,delimitrset
+	global vowelalphas,jieyinset,consonants,terminalsnd
+	global suffixes,TONEATLEFTVOWEL,TONEATRIGHTVOWEL,TONEATJIEYIN
+	global tonemarkdefault,tonemarkexceptions,tonetransform,compoundtrasform
+	global loweralphas, upperalphas, tonedalphas,untonetransform
+	global lower2upper, upper2lower
+	# rule specifications
+	execfile(rulefilename, globals())
+	# computed rules
+	tonedalphas = u''.join([toned for alpha, toned in tonetransform.items()])
+	untonetransform = []
+	for alpha, toned in tonetransform.items():
+		untonetransform += [(tonedalpha, alpha) for tonedalpha in toned]
+	untonetransform = dict(untonetransform)
+	if len(loweralphas) <> len(upperalphas):
+		raise ValueError, 'Unmatched length between lower/upperalphas'
+	lower2upper = upper2lower = []
+	for i in range(0, len(loweralphas)):
+		lower2upper += [(loweralphas[i], upperalphas[i])]
+		upper2lower += [(upperalphas[i], loweralphas[i])]
+	lower2upper = dict(lower2upper)
+	upper2lower = dict(upper2lower)
+
+specifyrule('.'+os.sep+os.path.dirname(sys.argv[0])+os.sep+'pinyin.rule')
 
 def showhelp():
 	print "\
@@ -53,6 +43,30 @@ pyformat.py	author: YIN Dian	copyleft 2007	licenced in GPL\n\
 Format plain pinyin text with tone markers into toned pinyin\n\
 version: 20070623\n\
 Usage: pyformat.py filename(s)"
+
+def isupper(char):
+	return char in upperalphas
+
+def islower(char):
+	return char in loweralphas
+
+def toupper(char):
+	if not islower(char):
+		return char
+	else:
+		return lower2upper[char]
+
+def tolower(char):
+	if not isupper(char):
+		return char
+	else:
+		return upper2lower[char]
+
+def uppercase(str):
+	return u''.join(map(toupper, str))
+
+def lowercase(str):
+	return u''.join(map(tolower, str))
 
 def istonemark(char):
 	return char in tonemarkset or char in untonemark
@@ -66,6 +80,12 @@ def isdelim(char):
 def istoned(char):
 	return char in tonedalphas
 
+def isjieyin(char):
+	return char in jieyinset
+
+def isvowel(char):
+	return char in vowelalphas
+
 def striptone(syllable):
 	"return (syllable_without_tone, tone)"
 	if not type(syllable) in types.StringTypes:
@@ -78,6 +98,11 @@ def striptone(syllable):
 			alpha = untonetransform[char]
 			tone = tonetransform[alpha].index(char) + 1
 			result += alpha
+		elif isupper(char) and istoned(tolower(char)):
+			char = tolower(char)
+			alpha = untonetransform[char]
+			tone = tonetransform[alpha].index(char) + 1
+			result += toupper(alpha)
 		else:
 			result += char
 	return result, tone
@@ -90,34 +115,51 @@ def splitsyllable(syllable):
 				`type(syllable)`
 	consonant = jieyin = vowels = terminal = suffix = u''
 	i = 0
-	while i < len(syllable) and not syllable[i] in jieyinset and\
-			not syllable[i] in vowelalphas:
-		consonant += syllable[i]
-		i += 1
-	if consonant and not consonant in consonants:
-		raise ValueError, "Unrecognized consonant %s" % consonant
-	if i < len(syllable) and syllable[i] in jieyinset:
+	j = len(syllable)
+	#while i < len(syllable) and not isjieyin(tolower(syllable[i])) and\
+	#		not isvowel(tolower(syllable[i])):
+	#	consonant += syllable[i]
+	#	i += 1
+	#if consonant and not lowercase(consonant) in consonants:
+	#	raise ValueError, "Unrecognized consonant %s" % consonant
+	for possiblecon in consonants:
+		if len(possiblecon) <= j and \
+			lowercase(syllable[:len(possiblecon)]) == \
+			possiblecon and len(possiblecon) > len(consonant):
+				consonant = syllable[:len(possiblecon)]
+	i += len(consonant)
+	if i < len(syllable) and not isjieyin(tolower(syllable[i])) and\
+			not isvowel(tolower(syllable[i])):
+		raise ValueError, "Not a syllable: %s" % syllable
+	if i < len(syllable) and isjieyin(tolower(syllable[i])):
 		jieyin = syllable[i]
 		i += 1
-	j = len(syllable)
 	for possiblesuffix in suffixes:
 		if len(possiblesuffix) <= j - i and \
-			syllable[j-len(possiblesuffix):j] == possiblesuffix:
-				suffix = possiblesuffix
-				j -= len(possiblesuffix)
-				break
+			lowercase(syllable[j-len(possiblesuffix):j]) == \
+			possiblesuffix and len(possiblesuffix) > len(suffix):
+				suffix = syllable[j-len(possiblesuffix):j]
+	j -= len(suffix)
 	for possibleterm in terminalsnd:
 		if len(possibleterm) <= j - i and \
-			syllable[j-len(possibleterm):j] == possibleterm:
-				terminal = possibleterm
-				j -= len(possibleterm)
-				break
+			lowercase(syllable[j-len(possibleterm):j]) == \
+			possibleterm and len(possibleterm) > len(terminal):
+				terminal = syllable[j-len(possibleterm):j]
+	j -= len(terminal)
 	vowels = syllable[i:j]
-	for char in vowels:
-		if not char in vowelalphas:
+	for char in lowercase(vowels):
+		if not isvowel(char):
 			raise ValueError, "Unrecognized vowel %s" % vowels
 	if jieyin and not vowels:
 		jieyin, vowels = u'', jieyin
+	if terminal and not vowels:
+		needchange = True
+		for char in lowercase(terminal):
+			if not isvowel(char):
+				needchange = False
+		if needchange:
+			terminal, vowels = u'', terminal
+	print (consonant, jieyin, vowels, terminal, suffix),
 	return consonant, jieyin, vowels, terminal, suffix
 
 def marktone(syllable, tonemark):
@@ -144,19 +186,31 @@ def marktone(syllable, tonemark):
 					"on %s") % (`tonemark`, syllable)
 		markrule = tonemarkdefault
 		for case in tonemarkexceptions.keys():
-			if (not case[0] or case[0] == consonant) and\
-				(not case[1] or case[1] == jieyin) and\
-				(not case[2] or case[2] == vowels) and\
-				(not case[3] or case[3] == terminal) and\
-				(not case[4] or case[4] == suffix):
+			if (case[0] == 0 or case[0] == lowercase(consonant)) and\
+				(case[1] == 0 or case[1] == lowercase(jieyin)) and\
+				(case[2] == 0 or case[2] == lowercase(vowels)) and\
+				(case[3] == 0 or case[3] == lowercase(terminal)) and\
+				(case[4] == 0 or case[4] == lowercase(suffix)):
 					markrule = tonemarkexceptions[case]
-		#print 'markrule= %s' % markrule,
-		if markrule == TONEATLEFTVOWEL or not jieyin:
-			vowels = tonetransform[vowels[0]][tone-1] + vowels[1:]
+		print 'markrule= %s' % markrule,
+		if markrule == TONEATLEFTVOWEL or (
+				markrule == TONEATJIEYIN and not jieyin):
+			if not isupper(vowels[0]):
+				vowels = tonetransform[vowels[0]][tone-1] + vowels[1:]
+			else:
+				vowels = toupper(tonetransform[tolower(vowels[0])
+						][tone-1]) + vowels[1:]
 		elif markrule == TONEATRIGHTVOWEL:
-			vowels = vowels[:-1] + tonetransform[vowels[-1]][tone-1]
+			if not isupper(vowels[-1]):
+				vowels = vowels[:-1] + tonetransform[vowels[-1]][tone-1]
+			else:
+				vowels = vowels[:-1] + toupper(tonetransform[tolower(
+					vowels[-1])][tone-1])
 		elif markrule == TONEATJIEYIN and jieyin:
-			jieyin = tonetransform[jieyin][tone - 1]
+			if not isupper(jieyin):
+				jieyin = tonetransform[jieyin][tone - 1]
+			else:
+				jieyin = toupper(tonetransform[tolower(jieyin)][tone - 1])
 		else:
 			raise ValueError, ("Don't know how to mark tone %s "+\
 					"on %s") % (`tonemark`, syllable)
@@ -168,10 +222,15 @@ def makecompound(str):
 		return u'', False
 	changed = 0
 	for case in compoundtrasform.keys():
-		if len(case) <= len(str) and str[-len(case):] == case:
-			str = str[:-len(case)] + compoundtrasform[case]
-			changed = True
-			break
+		if len(case) <= len(str):
+			if str[-len(case):] == case:
+				str = str[:-len(case)] + compoundtrasform[case]
+				changed = True
+				break
+			elif lowercase(str[-len(case):]) == case:
+				str = str[:-len(case)] + uppercase(compoundtrasform[case])
+				changed = True
+				break
 	return str, changed
 	
 def isvalid(syllable):
@@ -180,6 +239,8 @@ def isvalid(syllable):
 	numtoned = 0
 	for char in syllable:
 		if istoned(char):
+			numtoned += 1
+		elif isupper(char) and istoned(tolower(char)):
 			numtoned += 1
 	if numtoned > 1:
 		return False
@@ -279,6 +340,8 @@ def pyformat(str):
 			changed = False
 		#print syllable,changed, ')',
 		lastchar = char
+	if isvalid(syllable):
+		syllable = marktone(syllable, -1)
 	result += syllable
 	return result
 

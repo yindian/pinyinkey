@@ -1,0 +1,34 @@
+# -*- coding: utf-8 -*-
+tonemarkset = u'1234'
+untonemark  = u'0'
+compoundset = u'ue'
+delimitrset = u"' \t\n,."	# no need to be complete
+vowelalphas = u'aoeiuüê'
+jieyinset   = u'iuü'
+consonants  = (u'b', u'p', u'm', u'f', u'd', u't', u'n', u'l', 
+		u'g', u'k', u'h', u'j', u'q', u'x', u'y', 
+		u'zh', u'ch', u'sh', u'r', u'z', u'c', u's', u'w',
+		# extended
+		#u'ng', u'v', u'qh'
+		)
+terminalsnd = (u'n', u'ng',
+		# extended
+		#u'm', u'p', u't', u'k', u'q'
+		)
+suffixes    = (u'r')
+tonemarkdefault  = TONEATLEFTVOWEL
+tonemarkexceptions = {} #{(0, u'i', u'u', 0, 0): TONEATJIEYIN}
+tonetransform = {
+	u'a': u'āáǎà',
+	u'o': u'ōóǒò',
+	u'e': u'ēéěè',
+	u'i': u'īíǐì',
+	u'u': u'ūúǔù',
+	u'ü': u'ǖǘǚǜ'
+}
+compoundtrasform = {
+	u'uu': u'ü',
+	u'ee': u'ê'
+}
+loweralphas = u'abcdefghijklmnopqrstuvwxyzüêāáǎàōóǒòēéěèīíǐìūúǔùǖǘǚǜ'
+upperalphas = u'ABCDEFGHIJKLMNOPQRSTUVWXYZÜÊĀÁǍÀŌÓǑÒĒÉĚÈĪÍǏÌŪÚǓÙǕǗǙǛ'
