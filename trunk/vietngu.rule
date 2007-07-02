@@ -1,0 +1,45 @@
+# -*- coding: utf-8 -*-
+# by YIN Dian on 070702. What tedious job!
+tonemarkset = u'sfrxj'
+untonemark  = u'z'
+compoundset = u'aeoudw'
+delimitrset = u"' \t\n,."	# no need to be complete
+vowelalphas = u'aăâeêioôơuưy'
+jieyinset   = u'ou'
+consonants  = (u'b', u'c', u'd', u'đ', u'g', u'h', u'k', u'l', u'm', u'n', 
+		u'p', u'q', u'r', u's', u't', u'v', u'x', u'ch', u'gi', u'gh', 
+		u'kh', u'nh', u'ng', u'ngh', u'ph', u'th', u'tr')
+terminalsnd = (u'i', u'y', u'u', u'o',
+		u'n', u'ng', u'm', u'p', u't', u'c', u'ch')
+suffixes    = ()
+tonemarkdefault  = TONEATRIGHTVOWEL
+tonemarkexceptions = {(0, u'', 0, u'', 0): TONEATLEFTVOWEL,
+	(0, u'u', u'a', u'', 0): TONEATJIEYIN,
+	(0, u'u', u'ô', u'', 0): TONEATJIEYIN,
+	#{(0, u'i', u'u', 0, 0): TONEATJIEYIN}
+}
+tonetransform = {
+	u'a': u'áàảãạ',
+	u'ă': u'ắằẳẵặ',
+	u'â': u'ấầẩẫậ',
+	u'e': u'éèẻẽẹ',
+	u'ê': u'ếềểễệ',
+	u'i': u'íìỉĩị',
+	u'o': u'óòỏõọ',
+	u'ô': u'ốồổỗộ',
+	u'ơ': u'ớờởỡợ',
+	u'u': u'úùủũụ',
+	u'ư': u'ứừửữự',
+	u'y': u'ýỳỷỹỵ'
+}
+compoundtrasform = {
+	u'aa': u'â',
+	u'aw': u'ă',
+	u'ee': u'ê',
+	u'oo': u'ô',
+	u'ow': u'ơ',
+	u'uw': u'ư',
+	u'dd': u'đ'
+}
+loweralphas = u'abcdefghijklmnopqrstuvwxyzâăêôơưđáàảãạắằẳẵặấầẩẫậéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ'
+upperalphas = u'ABCDEFGHIJKLMNOPQRSTUVWXYZÂĂÊÔƠƯĐÁÀẢÃẠẮẰẲẴẶẤẦẨẪẬÉÈẺẼẸẾỀỂỄỆÍÌỈĨỊÓÒỎÕỌỐỒỔỖỘỚỜỞỠỢÚÙỦŨỤỨỪỬỮỰÝỲỶỸỴ'
