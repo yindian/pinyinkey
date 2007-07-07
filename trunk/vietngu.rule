@@ -14,8 +14,7 @@ terminalsnd = (u'i', u'y', u'u', u'o',
 suffixes    = ()
 tonemarkdefault  = TONEATRIGHTVOWEL
 tonemarkexceptions = {(0, u'', 0, u'', 0): TONEATLEFTVOWEL,
-	(0, u'u', u'a', u'', 0): TONEATJIEYIN,
-	(0, u'u', u'ô', u'', 0): TONEATJIEYIN,
+	(0, 1, 1, u'', 0): TONEATJIEYIN,
 	#{(0, u'i', u'u', 0, 0): TONEATJIEYIN}
 }
 tonetransform = {

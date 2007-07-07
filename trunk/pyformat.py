@@ -6,7 +6,8 @@
 # syllable model: [consonant] + [jieyin] + [vowel(s)] + [terminal] + [suffix]
 # Hist:	070624: first version out, pinyin implemented
 #	070702: implemented uppercase handling, and make splitting greedy
-#	070706: fixed bug in pyformat that now vowel is in vietnamese 'gi'
+#	070706: fixed bug in splitsyllable that now vowel is in vietnamese 'gi'
+#	070706: improved tone exception rule handling in splitsyllable
 import sys, os, string, types, fileinput
 defaultencoding = 'gbk'
 TONEATLEFTVOWEL  = 1
@@ -192,11 +193,11 @@ def marktone(syllable, tonemark):
 					"on %s") % (`tonemark`, syllable)
 		markrule = tonemarkdefault
 		for case in tonemarkexceptions.keys():
-			if (case[0] == 0 or case[0] == lowercase(consonant)) and\
-				(case[1] == 0 or case[1] == lowercase(jieyin)) and\
-				(case[2] == 0 or case[2] == lowercase(vowels)) and\
-				(case[3] == 0 or case[3] == lowercase(terminal)) and\
-				(case[4] == 0 or case[4] == lowercase(suffix)):
+			if (case[0] in (0, len(consonant), lowercase(consonant))) and\
+				(case[1] in (0, len(jieyin), lowercase(jieyin))) and\
+				(case[2] in (0, len(vowels), lowercase(vowels))) and\
+				(case[3] in (0, len(terminal), lowercase(terminal))) and\
+				(case[4] in (0, len(suffix), lowercase(suffix))):
 					markrule = tonemarkexceptions[case]
 		print 'markrule= %s' % markrule,
 		if markrule == TONEATLEFTVOWEL or (
