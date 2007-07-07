@@ -6,6 +6,7 @@
 # syllable model: [consonant] + [jieyin] + [vowel(s)] + [terminal] + [suffix]
 # Hist:	070624: first version out, pinyin implemented
 #	070702: implemented uppercase handling, and make splitting greedy
+#	070706: fixed bug in pyformat that now vowel is in vietnamese 'gi'
 import sys, os, string, types, fileinput
 defaultencoding = 'gbk'
 TONEATLEFTVOWEL  = 1
@@ -151,8 +152,6 @@ def splitsyllable(syllable):
 	for char in lowercase(vowels):
 		if not isvowel(char):
 			raise ValueError, "Unrecognized vowel %s" % vowels
-	if jieyin and not vowels:
-		jieyin, vowels = u'', jieyin
 	if terminal:
 		terminalisvowel = True
 		for char in lowercase(terminal):
@@ -160,10 +159,12 @@ def splitsyllable(syllable):
 				terminalisvowel = False
 	else:
 		terminalisvowel = False
-	if terminalisvowel and not jieyin and isjieyin(tolower(vowels)):
-		jieyin, vowels, terminal = vowels, terminal, u''
 	if terminalisvowel and not vowels:
 		terminal, vowels = u'', terminal
+	if jieyin and not vowels:
+		jieyin, vowels = u'', jieyin
+	if not vowels and consonant and isvowel(tolower(consonant[-1])):
+		consonant, vowels = consonant[:-1], consonant[-1]
 	print (consonant, jieyin, vowels, terminal, suffix),
 	return consonant, jieyin, vowels, terminal, suffix
 
