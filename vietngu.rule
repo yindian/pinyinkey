@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-# by YIN Dian on 070702. What tedious job!
+# Rule made by YIN Dian on 070702. What tedious job!
+# revision history not recorded. last revision: 070713
 tonemarkset = u'sfrxj'
 untonemark  = u'z'
 compoundset = u'aeoudw'
-delimitrset = u"-' \t\n,."	# no need to be complete
+delimitrset = u" \t\n\r\v\f" + u"""!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"""
 vowelalphas = u'aăâeêioôơuưy'
 jieyinset   = u'ou'
 consonants  = (u'b', u'c', u'd', u'đ', u'g', u'h', u'k', u'l', u'm', u'n', 

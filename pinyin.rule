@@ -2,7 +2,7 @@
 tonemarkset = u'1234'
 untonemark  = u'0'
 compoundset = u'ue'
-delimitrset = u"' \t\n,."	# no need to be complete
+delimitrset = u" \t\n\r\v\f" + u"""!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"""
 vowelalphas = u'aoeiuüê'
 jieyinset   = u'iuü'
 consonants  = (u'b', u'p', u'm', u'f', u'd', u't', u'n', u'l', 
@@ -24,11 +24,12 @@ tonetransform = {
 	u'e': u'ēéěè',
 	u'i': u'īíǐì',
 	u'u': u'ūúǔù',
-	u'ü': u'ǖǘǚǜ'
+	u'ü': u'ǖǘǚǜ',
+	u'ê': u'\0ế\0ề'
 }
 compoundtrasform = {
 	u'uu': u'ü',
 	u'ee': u'ê'
 }
-loweralphas = u'abcdefghijklmnopqrstuvwxyzüêāáǎàōóǒòēéěèīíǐìūúǔùǖǘǚǜ'
-upperalphas = u'ABCDEFGHIJKLMNOPQRSTUVWXYZÜÊĀÁǍÀŌÓǑÒĒÉĚÈĪÍǏÌŪÚǓÙǕǗǙǛ'
+loweralphas = u'abcdefghijklmnopqrstuvwxyzüêāáǎàōóǒòēéěèīíǐìūúǔùǖǘǚǜếề'
+upperalphas = u'ABCDEFGHIJKLMNOPQRSTUVWXYZÜÊĀÁǍÀŌÓǑÒĒÉĚÈĪÍǏÌŪÚǓÙǕǗǙǛẾỀ'
