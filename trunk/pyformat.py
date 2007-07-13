@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 # pyformat.py	author: YIN Dian	copyleft 2007	licenced under GPL
 # Format plain pinyin text with tone markers into toned pinyin
-# version: 20070701
+# version: 20070713
 # syllable model: [consonant] + [jieyin] + [vowel(s)] + [terminal] + [suffix]
 # Hist:	070624: first version out, pinyin implemented
 #	070702: implemented uppercase handling, and make splitting greedy
 #	070706: fixed bug in splitsyllable that now vowel is in vietnamese 'gi'
-#	070706: improved tone exception rule handling in splitsyllable
+#	070707: improved tone exception rule handling in splitsyllable
+#	070713: added support for incomplete tone alpha set, e.g. ee in pinyin.
+# TODO: add support for pure-consonant tone mark, e.g. m2 and ng2 in pinyin.
 import sys, os, string, types, fileinput
 defaultencoding = 'gbk'
 TONEATLEFTVOWEL  = 1
@@ -23,7 +25,7 @@ def specifyrule(rulefilename):
 	# rule specifications
 	execfile(rulefilename, globals())
 	# computed rules
-	tonedalphas = u''.join([toned for alpha, toned in tonetransform.items()])
+	tonedalphas = u''.join(filter(None, [toned for alpha, toned in tonetransform.items()]))
 	untonetransform = []
 	for alpha, toned in tonetransform.items():
 		untonetransform += [(tonedalpha, alpha) for tonedalpha in toned]
@@ -200,20 +202,23 @@ def marktone(syllable, tonemark):
 				(case[4] in (0, len(suffix), lowercase(suffix))):
 					markrule = tonemarkexceptions[case]
 		print 'markrule= %s' % markrule,
-		if markrule == TONEATLEFTVOWEL or (
-				markrule == TONEATJIEYIN and not jieyin):
+		if (markrule == TONEATLEFTVOWEL or (
+				markrule == TONEATJIEYIN and not jieyin)) and\
+					tonetransform[tolower(vowels[0])][tone-1] <> u'\0':
 			if not isupper(vowels[0]):
 				vowels = tonetransform[vowels[0]][tone-1] + vowels[1:]
 			else:
 				vowels = toupper(tonetransform[tolower(vowels[0])
 						][tone-1]) + vowels[1:]
-		elif markrule == TONEATRIGHTVOWEL:
+		elif markrule == TONEATRIGHTVOWEL and\
+			tonetransform[tolower(vowels[-1])][tone-1] <> u'\0':
 			if not isupper(vowels[-1]):
 				vowels = vowels[:-1] + tonetransform[vowels[-1]][tone-1]
 			else:
 				vowels = vowels[:-1] + toupper(tonetransform[tolower(
 					vowels[-1])][tone-1])
-		elif markrule == TONEATJIEYIN and jieyin:
+		elif markrule == TONEATJIEYIN and jieyin and\
+			tonetransform[tolower(jieyin)][tone-1] <> u'\0':
 			if not isupper(jieyin):
 				jieyin = tonetransform[jieyin][tone - 1]
 			else:
@@ -221,6 +226,7 @@ def marktone(syllable, tonemark):
 		else:
 			raise ValueError, ("Don't know how to mark tone %s "+\
 					"on %s") % (`tonemark`, syllable)
+		print 'marked vowel = %s' % `vowels`,
 		return consonant + jieyin + vowels + terminal + suffix
 
 def makecompound(str):
@@ -269,7 +275,7 @@ def pyformat(str):
 	changed = False
 	for char in str:
 		#print '(',char,syllable,isvalid(syllable),
-		if istonemark(char):
+		if istonemark(tolower(char)):
 			if char == lastchar and changed:
 				syllable = oldsyllable + char
 				changed = False
@@ -284,7 +290,7 @@ def pyformat(str):
 			elif isvalid(syllable):
 				oldsyllable = syllable
 				try:
-					syllable = marktone(syllable, char)
+					syllable = marktone(syllable, tolower(char))
 					changed = True
 				except:
 					result += marktone(oldsyllable, -1)
@@ -304,7 +310,7 @@ def pyformat(str):
 					result += char
 					syllable = oldsyllable = u''
 				changed = False
-		elif iscompound(char):
+		elif iscompound(tolower(char)):
 			if char == lastchar and changed:
 				syllable = oldsyllable + char
 				changed = False
