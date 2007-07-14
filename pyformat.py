@@ -9,6 +9,7 @@
 #	070706: fixed bug in splitsyllable that now vowel is in vietnamese 'gi'
 #	070707: improved tone exception rule handling in splitsyllable
 #	070713: added support for incomplete tone alpha set, e.g. ee in pinyin.
+#	070714: fixed minor bug of line[:-1] when line not end with LF.
 # TODO: add support for pure-consonant tone mark, e.g. m2 and ng2 in pinyin.
 import sys, os, string, types, fileinput
 defaultencoding = 'gbk'
@@ -168,7 +169,7 @@ def splitsyllable(syllable):
 		jieyin, vowels = u'', jieyin
 	if not vowels and consonant and isvowel(tolower(consonant[-1])):
 		consonant, vowels = consonant[:-1], consonant[-1]
-	print (consonant, jieyin, vowels, terminal, suffix),
+	print >> sys.stderr, (consonant, jieyin, vowels, terminal, suffix),
 	return consonant, jieyin, vowels, terminal, suffix
 
 def marktone(syllable, tonemark):
@@ -201,7 +202,7 @@ def marktone(syllable, tonemark):
 				(case[3] in (0, len(terminal), lowercase(terminal))) and\
 				(case[4] in (0, len(suffix), lowercase(suffix))):
 					markrule = tonemarkexceptions[case]
-		print 'markrule= %s' % markrule,
+		print >> sys.stderr, 'markrule= %s' % markrule,
 		if (markrule == TONEATLEFTVOWEL or (
 				markrule == TONEATJIEYIN and not jieyin)) and\
 					tonetransform[tolower(vowels[0])][tone-1] <> u'\0':
@@ -226,7 +227,7 @@ def marktone(syllable, tonemark):
 		else:
 			raise ValueError, ("Don't know how to mark tone %s "+\
 					"on %s") % (`tonemark`, syllable)
-		print 'marked vowel = %s' % `vowels`,
+		print >> sys.stderr, 'marked vowel = %s' % `vowels`,
 		return consonant + jieyin + vowels + terminal + suffix
 
 def makecompound(str):
@@ -374,7 +375,9 @@ if __name__ == '__main__':
 	#
 	if len(sys.argv) > 1:
 		for line in fileinput.input():
-			print pyformat(unicode(line[:-1],
+			if line[:-1] == '\n':
+				del line[:-1]
+			print pyformat(unicode(line,
 				defaultencoding)).encode(defaultencoding)
 	else:
 		showhelp()
