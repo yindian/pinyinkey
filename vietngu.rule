@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Rule made by YIN Dian on 070702. What tedious job!
-# revision history not recorded. last revision: 070713
+# revision history not recorded. last revision: 070714
 tonemarkset = u'sfrxj'
 untonemark  = u'z'
 compoundset = u'aeoudw'
@@ -16,6 +16,7 @@ suffixes    = ()
 tonemarkdefault  = TONEATRIGHTVOWEL
 tonemarkexceptions = {(0, u'', 0, u'', 0): TONEATLEFTVOWEL,
 	(0, 1, 1, u'', 0): TONEATJIEYIN,
+	(u'q', 'u', 0, u'', 0): TONEATRIGHTVOWEL
 	#{(0, u'i', u'u', 0, 0): TONEATJIEYIN}
 }
 tonetransform = {
