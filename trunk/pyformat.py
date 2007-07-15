@@ -9,7 +9,7 @@
 #	070706: fixed bug in splitsyllable that now vowel is in vietnamese 'gi'
 #	070707: improved tone exception rule handling in splitsyllable
 #	070713: added support for incomplete tone alpha set, e.g. ee in pinyin.
-#	070714: fixed minor bug of line[:-1] when line not end with LF.
+#	070715: fixed minor bug of line[:-1] when line not end with LF.
 # TODO: add support for pure-consonant tone mark, e.g. m2 and ng2 in pinyin.
 import sys, os, string, types, fileinput
 defaultencoding = 'gbk'
@@ -375,8 +375,8 @@ if __name__ == '__main__':
 	#
 	if len(sys.argv) > 1:
 		for line in fileinput.input():
-			if line[:-1] == '\n':
-				del line[:-1]
+			if line[-1] == '\n':
+				line = line[:-1]
 			print pyformat(unicode(line,
 				defaultencoding)).encode(defaultencoding)
 	else:
