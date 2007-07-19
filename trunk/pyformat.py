@@ -10,6 +10,7 @@
 #	070707: improved tone exception rule handling in splitsyllable
 #	070713: added support for incomplete tone alpha set, e.g. ee in pinyin.
 #	070715: fixed minor bug of line[:-1] when line not end with LF.
+#	070718: adjusted source to accomodate linux platform
 # TODO: add support for pure-consonant tone mark, e.g. m2 and ng2 in pinyin.
 import sys, os, string, types, fileinput
 defaultencoding = 'gbk'
@@ -41,7 +42,7 @@ def specifyrule(rulefilename):
 	lower2upper = dict(lower2upper)
 	upper2lower = dict(upper2lower)
 
-specifyrule('.'+os.sep+os.path.dirname(sys.argv[0])+os.sep+'pinyin.rule')
+specifyrule(os.path.dirname(sys.argv[0])+os.sep+'pinyin.rule')
 
 def showhelp():
 	print "\
