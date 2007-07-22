@@ -9,8 +9,7 @@
 #	070706: fixed bug in splitsyllable that now vowel is in vietnamese 'gi'
 #	070707: improved tone exception rule handling in splitsyllable
 #	070713: added support for incomplete tone alpha set, e.g. ee in pinyin.
-#	070715: fixed minor bug of line[:-1] when line not end with LF.
-#	070718: adjusted source to accomodate linux platform
+#	070714: fixed minor bug of line[:-1] when line not end with LF.
 # TODO: add support for pure-consonant tone mark, e.g. m2 and ng2 in pinyin.
 import sys, os, string, types, fileinput
 defaultencoding = 'gbk'
@@ -42,7 +41,10 @@ def specifyrule(rulefilename):
 	lower2upper = dict(lower2upper)
 	upper2lower = dict(upper2lower)
 
-specifyrule(os.path.dirname(sys.argv[0])+os.sep+'pinyin.rule')
+rulepath = os.path.dirname(sys.argv[0])
+if rulepath and rulepath[-1] <> os.sep:
+	rulepath += os.sep
+specifyrule(rulepath + 'pinyin.rule')
 
 def showhelp():
 	print "\
@@ -376,8 +378,8 @@ if __name__ == '__main__':
 	#
 	if len(sys.argv) > 1:
 		for line in fileinput.input():
-			if line[-1] == '\n':
-				line = line[:-1]
+			if line[:-1] == '\n':
+				del line[:-1]
 			print pyformat(unicode(line,
 				defaultencoding)).encode(defaultencoding)
 	else:

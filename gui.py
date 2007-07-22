@@ -59,7 +59,9 @@ class MainFrame(Frame):
 		self.nowkbd = IntVar()
 		self.nowkbd.set(0)
 		i = 0
-		pathprefix = os.path.dirname(sys.argv[0])+os.sep
+		pathprefix = os.path.dirname(sys.argv[0])
+		if pathprefix and pathprefix[-1] <> os.sep:
+			pathprefix += os.sep
 		filelist = glob.glob(pathprefix+pattern)
 		filelist.sort()
 		for fname in filelist:
@@ -67,7 +69,7 @@ class MainFrame(Frame):
 				specifyrule(fname)
 				print fname, 'selected'
 				self.nowkbd.set(i)
-			menu.add_radiobutton(label=`i`+'. '+os.path.basename(fname), 
+			menu.add_radiobutton(label=`i`+'. '+fname, 
 					command=selectrule, value=i,
 					underline=0, variable=self.nowkbd)
 			i += 1
