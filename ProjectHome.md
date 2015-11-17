@@ -1,0 +1,1 @@
+This project aims to provide a means to input Pinyin with tone markers more easily, flexibly and extendably. It uses an input method similar to the telex IM for Vietnamese, but extended.
