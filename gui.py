@@ -2,8 +2,12 @@
 # -*- coding: utf-8 -*-
 # author: YIN Dian	version: 20070701
 import sys, os, string, glob
-from Tkinter import *
-from tkFont import *
+try:
+	from Tkinter import *
+	from tkFont import *
+except:
+	from tkinter import *
+	from tkinter.font import *
 from pyformat import *
 
 # Gui Initialization
@@ -60,16 +64,16 @@ class MainFrame(Frame):
 		self.nowkbd.set(0)
 		i = 0
 		pathprefix = os.path.dirname(sys.argv[0])
-		if pathprefix and pathprefix[-1] <> os.sep:
+		if pathprefix and pathprefix[-1] != os.sep:
 			pathprefix += os.sep
 		filelist = glob.glob(pathprefix+pattern)
 		filelist.sort()
 		for fname in filelist:
 			def selectrule(fname=fname, i=i):
 				specifyrule(fname)
-				print fname, 'selected'
+				#print fname, 'selected'
 				self.nowkbd.set(i)
-			menu.add_radiobutton(label=`i`+'. '+fname, 
+			menu.add_radiobutton(label=repr(i)+'. '+fname, 
 					command=selectrule, value=i,
 					underline=0, variable=self.nowkbd)
 			i += 1
@@ -94,10 +98,10 @@ class MainFrame(Frame):
 				if i < 0:
 					i = 0
 				nowword = currentline[i:k]
-				nowwordpos = currentpos[:j] + `i`
-				print nowword.encode('gbk', 'replace'), nowwordpos,
+				nowwordpos = currentpos[:j] + repr(i)
+				#print nowword.encode('gbk', 'replace'), nowwordpos,
 				nowword = pyformat(nowword)
-				print
+				#print
 				event.widget.delete(nowwordpos, currentpos)
 				event.widget.insert(nowwordpos, nowword)
 				##print '>', currentline, '=', 
@@ -108,9 +112,9 @@ class MainFrame(Frame):
 	def textbox_onreturn(self, event):
 		currentline = event.widget.get('insert linestart', 'insert lineend')
 		currentpos = event.widget.index('insert linestart')
-		print currentline.encode('gbk', 'replace'), currentpos,
+		#print currentline.encode('gbk', 'replace'), currentpos,
 		currentline = pyformat(currentline)
-		print
+		#print
 		event.widget.delete('insert linestart', 'insert lineend')
 		event.widget.insert(currentpos, currentline)
 	def textbox_donowword(self, event):
@@ -127,10 +131,10 @@ class MainFrame(Frame):
 		if i < 0:
 			i = 0
 		nowword = currentline[i:k]
-		nowwordpos = currentpos[:j] + `i`
-		print nowword.encode('gbk', 'replace'), nowwordpos,
+		nowwordpos = currentpos[:j] + repr(i)
+		#print nowword.encode('gbk', 'replace'), nowwordpos,
 		nowword = pyformat(nowword)
-		print
+		#print
 		event.widget.delete(nowwordpos, currentpos)
 		event.widget.insert(nowwordpos, nowword)
 

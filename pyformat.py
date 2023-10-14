@@ -11,8 +11,21 @@
 #	070713: added support for incomplete tone alpha set, e.g. ee in pinyin.
 #	070714: fixed minor bug of line[:-1] when line not end with LF.
 # TODO: add support for pure-consonant tone mark, e.g. m2 and ng2 in pinyin.
+from __future__ import print_function
+try:
+	from past.builtins import execfile
+except:
+	pass
+try:
+	from types import StringTypes, ListType
+except:
+	StringTypes = [str]
+	ListType = list
 import sys, os, string, types, fileinput
-defaultencoding = 'gbk'
+if os.name == 'nt':
+	defaultencoding = 'gbk'
+else:
+	defaultencoding = 'utf-8'
 TONEATLEFTVOWEL  = 1
 TONEATRIGHTVOWEL = 2
 TONEATJIEYIN     = 3
@@ -31,8 +44,8 @@ def specifyrule(rulefilename):
 	for alpha, toned in tonetransform.items():
 		untonetransform += [(tonedalpha, alpha) for tonedalpha in toned]
 	untonetransform = dict(untonetransform)
-	if len(loweralphas) <> len(upperalphas):
-		raise ValueError, 'Unmatched length between lower/upperalphas'
+	if len(loweralphas) != len(upperalphas):
+		raise ValueError( 'Unmatched length between lower/upperalphas' )
 	lower2upper = []
 	upper2lower = []
 	for i in range(0, len(loweralphas)):
@@ -42,16 +55,17 @@ def specifyrule(rulefilename):
 	upper2lower = dict(upper2lower)
 
 rulepath = os.path.dirname(sys.argv[0])
-if rulepath and rulepath[-1] <> os.sep:
+if rulepath and rulepath[-1] != os.sep:
 	rulepath += os.sep
 specifyrule(rulepath + 'pinyin.rule')
 
 def showhelp():
-	print "\
+	print( "\
 pyformat.py	author: YIN Dian	copyleft 2007	licenced in GPL\n\
 Format plain pinyin text with tone markers into toned pinyin\n\
 version: 20070623\n\
 Usage: pyformat.py filename(s)"
+)
 
 def isupper(char):
 	return char in upperalphas
@@ -97,9 +111,9 @@ def isvowel(char):
 
 def striptone(syllable):
 	"return (syllable_without_tone, tone)"
-	if not type(syllable) in types.StringTypes:
-		raise TypeError, 'Expect string, but %s given' %\
-				`type(syllable)`
+	if not type(syllable) in StringTypes:
+		raise TypeError( 'Expect string, but %s given' %\
+				type(syllable))
 	result = u''
 	tone = 0
 	for char in syllable:
@@ -119,9 +133,9 @@ def striptone(syllable):
 def splitsyllable(syllable):
 	"""return (consonant, jieyin, vowels, terminal, suffix)
 	requires the input syllable to be stripped of tone mark"""
-	if not type(syllable) in types.StringTypes:
-		raise TypeError, 'Expect string, but %s given' %\
-				`type(syllable)`
+	if not type(syllable) in StringTypes:
+		raise TypeError( 'Expect string, but %s given' %\
+				type(syllable))
 	consonant = jieyin = vowels = terminal = suffix = u''
 	i = 0
 	j = len(syllable)
@@ -139,7 +153,7 @@ def splitsyllable(syllable):
 	i += len(consonant)
 	if i < len(syllable) and not isjieyin(tolower(syllable[i])) and\
 			not isvowel(tolower(syllable[i])):
-		raise ValueError, "Not a syllable: %s" % syllable
+		raise ValueError( "Not a syllable: %s" % syllable )
 	if i < len(syllable) and isjieyin(tolower(syllable[i])):
 		jieyin = syllable[i]
 		i += 1
@@ -158,7 +172,7 @@ def splitsyllable(syllable):
 	vowels = syllable[i:j]
 	for char in lowercase(vowels):
 		if not isvowel(char):
-			raise ValueError, "Unrecognized vowel %s" % vowels
+			raise ValueError( "Unrecognized vowel %s" % vowels )
 	if terminal:
 		terminalisvowel = True
 		for char in lowercase(terminal):
@@ -172,20 +186,20 @@ def splitsyllable(syllable):
 		jieyin, vowels = u'', jieyin
 	if not vowels and consonant and isvowel(tolower(consonant[-1])):
 		consonant, vowels = consonant[:-1], consonant[-1]
-	print >> sys.stderr, (consonant, jieyin, vowels, terminal, suffix),
+	#print >> sys.stderr, (consonant, jieyin, vowels, terminal, suffix),
 	return consonant, jieyin, vowels, terminal, suffix
 
 def marktone(syllable, tonemark):
 	"mark syllable with tonemark and return the result"
 	if not syllable:
-		if type(tonemark) in types.StringTypes:
+		if type(tonemark) in StringTypes:
 			return tonemark
 		else:
 			return u''
 	else:
 		syllable, tone = striptone(syllable)
 		#print syllable, tonemark
-		if type(tonemark) in types.StringTypes:
+		if type(tonemark) in StringTypes:
 			if tonemark in tonemarkset:
 				tone = tonemarkset.index(tonemark) + 1
 			elif tonemark == untonemark:
@@ -195,8 +209,8 @@ def marktone(syllable, tonemark):
 		consonant, jieyin, vowels, terminal, suffix = \
 				splitsyllable(syllable)
 		if not vowels:
-			raise ValueError, ("No vowel to mark tone %s "+\
-					"on %s") % (`tonemark`, syllable)
+			raise ValueError( ("No vowel to mark tone %s "+\
+					"on %s") % (repr(tonemark), syllable))
 		markrule = tonemarkdefault
 		for case in tonemarkexceptions.keys():
 			if (case[0] in (0, len(consonant), lowercase(consonant))) and\
@@ -205,32 +219,33 @@ def marktone(syllable, tonemark):
 				(case[3] in (0, len(terminal), lowercase(terminal))) and\
 				(case[4] in (0, len(suffix), lowercase(suffix))):
 					markrule = tonemarkexceptions[case]
-		print >> sys.stderr, 'markrule= %s' % markrule,
+		#print >> sys.stderr, 'markrule= %s' % markrule,
 		if (markrule == TONEATLEFTVOWEL or (
 				markrule == TONEATJIEYIN and not jieyin)) and\
-					tonetransform[tolower(vowels[0])][tone-1] <> u'\0':
+					tonetransform[tolower(vowels[0])][tone-1] != u'\0':
 			if not isupper(vowels[0]):
 				vowels = tonetransform[vowels[0]][tone-1] + vowels[1:]
 			else:
 				vowels = toupper(tonetransform[tolower(vowels[0])
 						][tone-1]) + vowels[1:]
 		elif markrule == TONEATRIGHTVOWEL and\
-			tonetransform[tolower(vowels[-1])][tone-1] <> u'\0':
+			tonetransform[tolower(vowels[-1])][tone-1] != u'\0':
 			if not isupper(vowels[-1]):
 				vowels = vowels[:-1] + tonetransform[vowels[-1]][tone-1]
 			else:
 				vowels = vowels[:-1] + toupper(tonetransform[tolower(
 					vowels[-1])][tone-1])
 		elif markrule == TONEATJIEYIN and jieyin and\
-			tonetransform[tolower(jieyin)][tone-1] <> u'\0':
+			tonetransform[tolower(jieyin)][tone-1] != u'\0':
 			if not isupper(jieyin):
 				jieyin = tonetransform[jieyin][tone - 1]
 			else:
 				jieyin = toupper(tonetransform[tolower(jieyin)][tone - 1])
 		else:
-			raise ValueError, ("Don't know how to mark tone %s "+\
-					"on %s") % (`tonemark`, syllable)
-		print >> sys.stderr, 'marked vowel = %s' % `vowels`,
+			raise ValueError( ("Don't know how to mark tone %s "+\
+					"on %s") % (repr(tonemark), syllable)
+                    )
+		#print >> sys.stderr, 'marked vowel = %s' % repr(vowels),
 		return consonant + jieyin + vowels + terminal + suffix
 
 def makecompound(str):
@@ -270,11 +285,11 @@ def isvalid(syllable):
 
 def pyformat(str):
 	"""blah, just format"""
-	if type(str) == types.ListType:
+	if type(str) == ListType:
 		str = u''.join(str)
-	if not type(str) in types.StringTypes:
-		raise TypeError, 'Must input a string or list of strings, '\
-				+ 'but you gave %s' % `type(str)`
+	if not type(str) in StringTypes:
+		raise TypeError( 'Must input a string or list of strings, '\
+				+ 'but you gave %s' % type(str))
 	result = syllable = oldsyllable = lastchar = u''
 	changed = False
 	for char in str:
@@ -380,8 +395,11 @@ if __name__ == '__main__':
 		for line in fileinput.input():
 			if line[:-1] == '\n':
 				del line[:-1]
-			print pyformat(unicode(line,
-				defaultencoding)).encode(defaultencoding)
+			try:
+				print( pyformat(unicode(line,
+				defaultencoding)).encode(defaultencoding, 'replace') )
+			except NameError:
+				print( pyformat(line) )
 	else:
 		showhelp()
 		#print tonetransform
